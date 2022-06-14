@@ -26,7 +26,9 @@
   </div>
 
   <script>
-    function myFunction(p1) {
+    function generator(data, categories) {
+      console.log(data);
+       console.log(categories);
       var title = {
         text: 'Make Usage Report'
       };
@@ -34,8 +36,7 @@
         text: 'Source: make.com'
       };
       var xAxis = {
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        categories: categories
       };
       var yAxis = {
         title: {
@@ -43,9 +44,7 @@
         }
       };
 
-      var tooltip = {
-        valueSuffix: '\xB0C'
-      }
+
       var legend = {
         layout: 'vertical',
         align: 'right',
@@ -55,8 +54,10 @@
 
       var series = [];
 
-      for (let i = 0; i < p1.length; i++) {
-        series.push(p1[i]);
+
+      for (let i = 0; i < data.length; i++) {
+        series.push(data[i]);
+        console.log(data[i]);
       }
 
       var json = {};
@@ -64,7 +65,6 @@
       json.subtitle = subtitle;
       json.xAxis = xAxis;
       json.yAxis = yAxis;
-      json.tooltip = tooltip;
       json.legend = legend;
       json.series = series;
 
@@ -84,43 +84,67 @@
           $.ajax({
             url: endpoint,
             success: function(data) {
+            
+              categories = [];
               holder = [];
+
+              operations_data = [];
+              duration_data = [];
+              transfer_data = [];
+
+              console.log(data.length)
 
               
               for (let i = 0; i < data.length; i++) {
-                var type = data[i]['type'];
-                console.log(type);
+                var type = data[i]['f'];
+                categories.push(type[3]['v'])
+              }
 
-                var total_report = [];
-                for (let x = 0; x < data[i].result.length; x++) {
-                 temp = data[i].result[x];
-                 result = temp['result'];
-   
-                 var matches = /\[(.*?)\]/g.exec(result);
-  
-                process_1 = matches[1].split(",");
+              for (let i = 0; i < data.length; i++) {
+                var type = data[i]['f'];
+                operations_data.push(Number(type[1]['v']))
+              }
 
-                var total = 0;
-                for (var u= 0; u < process_1.length; u++) {
-                    total += process_1[u] << 0;
-                }
-
-                console.log(total)
-                total_report.push(total);
-
+              for (let i = 0; i < data.length; i++) {
+                var type = data[i]['f'];
+                duration_data.push(Number(type[2]['v']))
               }
 
 
-              temp = {
-                name: type,
-                data: total_report
+              for (let i = 0; i < data.length; i++) {
+                var type = data[i]['f'];
+                transfer_data.push(Number(type[3]['v']))
+              }
+
+              for (let i = 0; i < 3; i++) {
+               prepare = {
+                name: "",
+                data: []
               };
 
-              holder.push(temp);
+                switch(i) {
+                  case 0:
+                    prepare['name'] = "operations";
+                    prepare['data'] = operations_data
+                    break;
+                  case 1:
+                    prepare['name'] = "duration";
+                    prepare['data'] = duration_data
+                    break;
+                  case 2:
+                    prepare['name'] = "transfer";
+                    prepare['data'] = transfer_data
+                    break;
+                  default:
+                    // code block
+                }
+
+                holder.push(prepare)
+
 
               }
 
-              myFunction(holder);
+              generator(holder, categories);
             },
             error: function(data) {
               console.log("error");
